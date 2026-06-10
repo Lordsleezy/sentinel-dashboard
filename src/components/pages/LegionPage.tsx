@@ -73,8 +73,8 @@ export default function LegionPage() {
         <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 dark:bg-gray-900">
           <h3 className="font-medium text-gray-900 dark:text-white">Quick Links</h3>
           <div className="mt-3 flex flex-col gap-2">
-            <a href={LEGION_URL} target="_blank" rel="noreferrer" className="text-teal-500 hover:underline">
-              SSH / Legion Portal →
+            <a href="https://ssh.sentinelprime.org/wetty" target="_blank" rel="noreferrer" className="text-teal-500 hover:underline">
+              SSH Terminal →
             </a>
             <a
               href={`${LEGION_URL.replace("https://", "https://uptime.")}/`}
