@@ -77,11 +77,11 @@ export default function DownloadsPage() {
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Download Analytics</h1>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="flex flex-wrap gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
         <select
           value={productFilter}
           onChange={(e) => setProductFilter(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
         >
           {PRODUCTS.map((p) => (
             <option key={p.value} value={p.value}>
@@ -92,7 +92,7 @@ export default function DownloadsPage() {
         <select
           value={dateRange}
           onChange={(e) => setDateRange(Number(e.target.value))}
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
         >
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>
@@ -102,12 +102,12 @@ export default function DownloadsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Total Downloads</p>
+        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <p className="text-sm text-gray-400">Total Downloads</p>
           <p className="text-2xl font-bold text-teal-600">{totalClicks}</p>
         </div>
         {productStats.slice(0, 3).map((stat) => (
-          <div key={stat.product} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div key={stat.product} className="bg-gray-800 p-4 rounded-lg border border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-400">{stat.product}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.count}</p>
           </div>
@@ -115,15 +115,15 @@ export default function DownloadsPage() {
       </div>
 
       {/* Bar Chart - Product Breakdown */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Downloads by Product</h2>
+      <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <h2 className="text-lg font-semibold text-white mb-4">Downloads by Product</h2>
         <div className="space-y-3">
           {productStats.map((stat) => {
             const percentage = totalClicks > 0 ? (stat.count / totalClicks) * 100 : 0;
             return (
               <div key={stat.product} className="flex items-center gap-4">
                 <div className="w-32 text-sm text-gray-600 dark:text-gray-400">{stat.product}</div>
-                <div className="flex-1 h-8 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="flex-1 h-8 bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-teal-500 rounded-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
@@ -139,8 +139,8 @@ export default function DownloadsPage() {
       </div>
 
       {/* Line Chart - Timeline (simplified) */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <h2 className="text-lg font-semibold text-white mb-4">
           Downloads Over Time (Last {dateRange} Days)
         </h2>
         <div className="h-64 flex items-end gap-2">
@@ -178,12 +178,12 @@ export default function DownloadsPage() {
       </div>
 
       {/* Recent Clicks Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Downloads</h2>
         </div>
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+          <thead className="bg-gray-700">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Product
@@ -220,7 +220,7 @@ export default function DownloadsPage() {
               </tr>
             ) : (
               filteredClicks.slice(0, 50).map((click) => (
-                <tr key={click.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <tr key={click.id} className="hover:bg-gray-700/50">
                   <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                     {PRODUCTS.find((p) => p.value === click.product)?.label || click.product}
                   </td>

@@ -67,8 +67,8 @@ export default function MedusaPage() {
 
       {/* Status cards */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Server Status</p>
+        <div className="bg-gray-800 p-5 rounded-xl border border-gray-700">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Server Status</p>
           {loading ? (
             <p className="text-sm text-gray-400 animate-pulse">Checking…</p>
           ) : (
@@ -81,8 +81,8 @@ export default function MedusaPage() {
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Products</p>
+        <div className="bg-gray-800 p-5 rounded-xl border border-gray-700">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Products</p>
           {loading ? (
             <p className="text-sm text-gray-400 animate-pulse">Loading…</p>
           ) : (
@@ -92,8 +92,8 @@ export default function MedusaPage() {
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Last Checked</p>
+        <div className="bg-gray-800 p-5 rounded-xl border border-gray-700">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Last Checked</p>
           <p className="text-lg font-semibold text-gray-900 dark:text-white">
             {status.lastChecked ?? "—"}
           </p>
@@ -105,7 +105,7 @@ export default function MedusaPage() {
         <button
           onClick={checkStatus}
           disabled={loading}
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 rounded-lg border border-gray-600 text-sm text-gray-300 hover:bg-gray-700 disabled:opacity-50 transition-colors"
         >
           {loading ? "Refreshing…" : "Refresh Status"}
         </button>
@@ -113,7 +113,7 @@ export default function MedusaPage() {
           href={`${MEDUSA_URL}/app/orders`}
           target="_blank"
           rel="noreferrer"
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="px-4 py-2 rounded-lg border border-gray-600 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
         >
           Orders →
         </a>
@@ -121,7 +121,7 @@ export default function MedusaPage() {
           href={`${MEDUSA_URL}/app/products`}
           target="_blank"
           rel="noreferrer"
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="px-4 py-2 rounded-lg border border-gray-600 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
         >
           Products →
         </a>
@@ -129,7 +129,7 @@ export default function MedusaPage() {
           href={`${MEDUSA_URL}/app/customers`}
           target="_blank"
           rel="noreferrer"
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="px-4 py-2 rounded-lg border border-gray-600 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
         >
           Customers →
         </a>

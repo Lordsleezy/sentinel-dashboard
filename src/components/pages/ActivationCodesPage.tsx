@@ -136,18 +136,18 @@ export default function ActivationCodesPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="flex flex-wrap gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
         <input
           type="text"
           placeholder="Search by code or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
         />
         <select
           value={productFilter}
           onChange={(e) => setProductFilter(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
         >
           {PRODUCTS.map((p) => (
             <option key={p.value} value={p.value}>
@@ -158,7 +158,7 @@ export default function ActivationCodesPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
         >
           {STATUS_OPTIONS.map((s) => (
             <option key={s.value} value={s.value}>
@@ -170,24 +170,24 @@ export default function ActivationCodesPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Total Codes</p>
+        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <p className="text-sm text-gray-400">Total Codes</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{codes.length}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Active</p>
+        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <p className="text-sm text-gray-400">Active</p>
           <p className="text-2xl font-bold text-green-600">
             {codes.filter((c) => c.status === "active").length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Unused</p>
+        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <p className="text-sm text-gray-400">Unused</p>
           <p className="text-2xl font-bold text-yellow-600">
             {codes.filter((c) => c.status === "unused").length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Revoked</p>
+        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <p className="text-sm text-gray-400">Revoked</p>
           <p className="text-2xl font-bold text-red-600">
             {codes.filter((c) => ["revoked", "expired"].includes(c.status)).length}
           </p>
@@ -195,9 +195,9 @@ export default function ActivationCodesPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+          <thead className="bg-gray-700">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Code
@@ -237,7 +237,7 @@ export default function ActivationCodesPage() {
               </tr>
             ) : (
               filteredCodes.map((code) => (
-                <tr key={code.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <tr key={code.id} className="hover:bg-gray-700/50">
                   <td className="px-4 py-3 font-mono text-sm text-gray-900 dark:text-white">
                     {code.code}
                   </td>
@@ -275,7 +275,7 @@ export default function ActivationCodesPage() {
       {/* Generate Modal */}
       {showGenerateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Generate Activation Code</h2>
             {generatedCode ? (
               <div className="space-y-4">
@@ -289,7 +289,7 @@ export default function ActivationCodesPage() {
                     setShowGenerateModal(false);
                     setGenerateForm({ email: "", product: "shield", type: "lifetime" });
                   }}
-                  className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
                 >
                   Close
                 </button>
@@ -305,7 +305,7 @@ export default function ActivationCodesPage() {
                     required
                     value={generateForm.email}
                     onChange={(e) => setGenerateForm({ ...generateForm, email: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
                     placeholder="customer@example.com"
                   />
                 </div>
@@ -316,7 +316,7 @@ export default function ActivationCodesPage() {
                   <select
                     value={generateForm.product}
                     onChange={(e) => setGenerateForm({ ...generateForm, product: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
                   >
                     {PRODUCTS.filter((p) => p.value !== "all").map((p) => (
                       <option key={p.value} value={p.value}>
@@ -332,7 +332,7 @@ export default function ActivationCodesPage() {
                   <select
                     value={generateForm.type}
                     onChange={(e) => setGenerateForm({ ...generateForm, type: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white"
                   >
                     <option value="lifetime">Lifetime</option>
                     <option value="monthly">Monthly</option>
@@ -343,7 +343,7 @@ export default function ActivationCodesPage() {
                   <button
                     type="button"
                     onClick={() => setShowGenerateModal(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg"
+                    className="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg"
                   >
                     Cancel
                   </button>
