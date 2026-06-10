@@ -26,23 +26,15 @@ export default function MedusaPage() {
     setLoading(true);
     const now = new Date().toLocaleTimeString();
     try {
-      const res = await fetch(`${MEDUSA_URL}/store/products?limit=1`, {
-        signal: AbortSignal.timeout(6000),
+      const res = await fetch("/api/medusa/status", {
+        signal: AbortSignal.timeout(10000),
       });
-      if (res.ok) {
-        const data = await res.json();
-        const countRes = await fetch(`${MEDUSA_URL}/store/products?limit=100`, {
-          signal: AbortSignal.timeout(6000),
-        });
-        const countData = countRes.ok ? await countRes.json() : null;
-        setStatus({
-          online: true,
-          productCount: countData?.count ?? data?.count ?? null,
-          lastChecked: now,
-        });
-      } else {
-        setStatus({ online: false, productCount: null, lastChecked: now });
-      }
+      const data = await res.json();
+      setStatus({
+        online: data.online ?? false,
+        productCount: data.productCount ?? null,
+        lastChecked: now,
+      });
     } catch {
       setStatus({ online: false, productCount: null, lastChecked: now });
     } finally {
