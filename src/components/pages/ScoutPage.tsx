@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import PageHeader from "@/components/dashboard/PageHeader";
 import LoadingState from "@/components/dashboard/LoadingState";
 import Button from "@/components/ui/button/Button";
-import { SCOUT_API } from "@/lib/config";
 import type { ScoutApproval } from "@/lib/supabase";
 
 export default function ScoutPage() {
@@ -25,15 +24,23 @@ export default function ScoutPage() {
     load();
   }, [load]);
 
-  const action = async (path: string) => {
-    await fetch(`${SCOUT_API}${path}`, { method: "POST" });
+  const action = async (act: "approve" | "reject", id: string) => {
+    await fetch("/api/scout/proxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: act, id }),
+    });
     load();
   };
 
   const manualScan = async () => {
     setScanning(true);
     try {
-      await fetch(`${SCOUT_API}/scan`, { method: "POST" });
+      await fetch("/api/scout/proxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "scan" }),
+      });
       load();
     } finally {
       setScanning(false);
@@ -99,13 +106,13 @@ export default function ScoutPage() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => action(`/approve/${row.id}`)}
+                          onClick={() => action("approve", row.id)}
                           className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs text-white hover:bg-teal-700"
                         >
                           Approve
                         </button>
                         <button
-                          onClick={() => action(`/reject/${row.id}`)}
+                          onClick={() => action("reject", row.id)}
                           className="rounded-lg bg-red-600/80 px-3 py-1.5 text-xs text-white hover:bg-red-700"
                         >
                           Reject

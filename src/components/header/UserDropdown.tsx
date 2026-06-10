@@ -3,8 +3,6 @@ import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useAuth } from "@/context/AuthContext";
-import Link from "next/link";
-
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { logout } = useAuth();

@@ -5,7 +5,6 @@ import PageHeader from "@/components/dashboard/PageHeader";
 import LoadingState from "@/components/dashboard/LoadingState";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
-import { LISTER_API } from "@/lib/config";
 import type { ListerDraft } from "@/lib/supabase";
 
 export default function ListerPage() {
@@ -28,11 +27,11 @@ export default function ListerPage() {
     load();
   }, [load]);
 
-  const listerAction = async (path: string, body?: object) => {
-    await fetch(`${LISTER_API}${path}`, {
+  const listerAction = async (action: "approve" | "reject" | "list", id?: string, payload?: object) => {
+    await fetch("/api/lister/proxy", {
       method: "POST",
-      headers: body ? { "Content-Type": "application/json" } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, id, payload }),
     });
     load();
   };
@@ -109,13 +108,13 @@ export default function ListerPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => listerAction(`/approve/${row.id}`)}
+                          onClick={() => listerAction("approve", row.id)}
                           className="rounded-lg bg-teal-600 px-2 py-1 text-xs text-white"
                         >
                           Approve
                         </button>
                         <button
-                          onClick={() => listerAction(`/reject/${row.id}`)}
+                          onClick={() => listerAction("reject", row.id)}
                           className="rounded-lg bg-red-600/80 px-2 py-1 text-xs text-white"
                         >
                           Reject
@@ -195,7 +194,7 @@ export default function ListerPage() {
         />
         <Button
           onClick={async () => {
-            await listerAction("/list", { input: listInput });
+            await listerAction("list", undefined, { input: listInput });
             setListModal(false);
             setListInput("");
           }}
