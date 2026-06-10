@@ -8,6 +8,9 @@ interface DownloadClick {
   page: string;
   clicked_at: string;
   referrer: string | null;
+  ip_address: string | null;
+  city: string | null;
+  country: string | null;
 }
 
 interface ProductStats {
@@ -36,14 +39,9 @@ export default function DownloadsPage() {
   async function fetchDownloads() {
     setLoading(true);
     try {
-      // This would connect to a real API endpoint
-      // For now, simulate with mock data
-      const mockData: DownloadClick[] = [
-        { id: "1", product: "shield", page: "/download", clicked_at: new Date().toISOString(), referrer: "google.com" },
-        { id: "2", product: "shift", page: "/products", clicked_at: new Date(Date.now() - 86400000).toISOString(), referrer: null },
-        { id: "3", product: "sentinelai", page: "/download", clicked_at: new Date(Date.now() - 172800000).toISOString(), referrer: "github.com" },
-      ];
-      setClicks(mockData);
+      const res = await fetch("/.netlify/functions/admin-downloads");
+      const data = await res.json();
+      setClicks(data.clicks || []);
     } catch (err) {
       console.error("Failed to fetch downloads:", err);
     } finally {
@@ -197,6 +195,12 @@ export default function DownloadsPage() {
                 Referrer
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                IP Address
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                City
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Timestamp
               </th>
             </tr>
@@ -204,13 +208,13 @@ export default function DownloadsPage() {
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                   Loading...
                 </td>
               </tr>
             ) : filteredClicks.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                   No downloads found
                 </td>
               </tr>
@@ -223,6 +227,12 @@ export default function DownloadsPage() {
                   <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{click.page}</td>
                   <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {click.referrer || "Direct"}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-mono text-gray-600 dark:text-gray-400">
+                    {click.ip_address || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    {click.city ? `${click.city}${click.country ? `, ${click.country}` : ""}` : (click.country || "—")}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {formatDate(click.clicked_at)}
