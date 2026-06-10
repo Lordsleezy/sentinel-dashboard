@@ -13,6 +13,8 @@ import {
   PlugInIcon,
   ShootingStarIcon,
   TableIcon,
+  KeyIcon,
+  DownloadIcon,
 } from "../icons/index";
 
 type NavItem = {
@@ -40,6 +42,8 @@ const navItems: NavItem[] = [
   { icon: <DatabaseIcon />, name: "Medusa", path: "/medusa" },
   { icon: <DollarLineIcon />, name: "Stripe", path: "/stripe" },
   { icon: <BoxCubeIcon />, name: "Legion", path: "/legion" },
+  { icon: <KeyIcon />, name: "Activation Codes", path: "/activation-codes" },
+  { icon: <DownloadIcon />, name: "Downloads", path: "/downloads" },
   { icon: <PlugInIcon />, name: "Settings", path: "/settings" },
 ];
 
