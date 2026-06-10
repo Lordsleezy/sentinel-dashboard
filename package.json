@@ -1,5 +1,5 @@
 {
-  "name": "free-nextjs-admin-dashboard",
+  "name": "sentinel-dashboard",
   "version": "2.3.0",
   "private": true,
   "scripts": {
@@ -15,8 +15,10 @@
     "@fullcalendar/list": "^6.1.19",
     "@fullcalendar/react": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
+    "@octokit/rest": "^22.0.1",
     "@react-jvectormap/core": "^1.0.4",
     "@react-jvectormap/world": "^1.1.2",
+    "@supabase/supabase-js": "^2.108.1",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.1.17",
     "apexcharts": "^4.7.0",
@@ -29,11 +31,13 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.2.0",
     "react-dropzone": "^14.3.8",
+    "stripe": "^22.2.0",
     "swiper": "^11.2.10",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@netlify/plugin-nextjs": "^5.15.11",
     "@svgr/webpack": "^8.1.0",
     "@types/node": "^20.19.25",
     "@types/react": "^19.2.1",
