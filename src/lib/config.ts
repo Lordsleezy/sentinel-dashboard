@@ -2,13 +2,15 @@ export const DEFAULT_PASSWORD = "sentinelprime2026";
 
 export const AUTH_STORAGE_KEY = "sentinel_auth";
 export const PASSWORD_STORAGE_KEY = "sentinel_dashboard_password";
+export const API_TOKEN_KEY = "sentinel_api_token";
 
 export const SCOUT_API = "https://scout.sentinelprime.org";
 export const LISTER_API = "https://lister.sentinelprime.org";
-export const LISTER_DIRECT_API =
-  process.env.NEXT_PUBLIC_LISTER_DIRECT_API || "http://192.168.0.117:8002";
 export const LEGION_URL = "https://legion.sentinelprime.org";
 export const MARKET_URL = "https://market.sentinelprime.org";
+export const INVEST_API = "https://invest.sentinelprime.org";
+export const SCOUT_HEALTH_URL = `${SCOUT_API}/health`;
+export const LEGION_PING_URL = SCOUT_HEALTH_URL;
 
 export const SENTINEL_PRODUCTS = [
   { key: "shift", name: "Shift", stripeLookup: "shift" },

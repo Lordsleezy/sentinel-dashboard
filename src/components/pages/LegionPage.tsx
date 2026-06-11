@@ -30,9 +30,9 @@ export default function LegionPage() {
 
   const wakeOnLan = async () => {
     setWolStatus("Sending...");
-    const res = await fetch("/api/wol", { method: "POST" });
+    const res = await fetch("/api/legion/wake", { method: "POST" });
     const data = await res.json();
-    setWolStatus(data.message || data.error || "Done");
+    setWolStatus(data.status || data.message || data.error || "Done");
   };
 
   return (

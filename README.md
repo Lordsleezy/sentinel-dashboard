@@ -14,6 +14,7 @@ Built on the [TailAdmin](https://github.com/TailAdmin/free-nextjs-admin-dashboar
 | `/market` | Medusa product management |
 | `/stripe` | Pricing, coupons, flash deals, revenue |
 | `/legion` | Service health, WoL, Uptime Kuma |
+| `/invest` | AI signals, watchlist, paper portfolio (auth required) |
 | `/settings` | Password, API keys, deploy hook |
 
 ## Auth
@@ -42,3 +43,6 @@ npm run dev
 - `STRIPE_SECRET_KEY` — MRR, payments, pricing, coupons
 - `GITHUB_TOKEN` — Pricing file commits to Lordsleezy/sentinelprime
 - `NETLIFY_DEPLOY_HOOK` — Redeploy sentinelprime.org after price changes
+- `WOL_MAC_ADDRESS` — Legion MAC for Wake-on-LAN (e.g. `9c:5a:44:46:e1:80`)
+- `DASHBOARD_API_TOKEN` — Bearer token for protected API routes (shutdown)
+- `LEGION_SSH_HOST` / `LEGION_SSH_USER` / `LEGION_SSH_PASSWORD` — Remote shutdown

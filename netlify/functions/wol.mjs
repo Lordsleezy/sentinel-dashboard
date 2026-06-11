@@ -1,18 +1,17 @@
+const SITE_URL = process.env.URL || process.env.DEPLOY_PRIME_URL || "";
+
 export async function handler() {
-  const mac = process.env.WOL_MAC_ADDRESS;
-  if (!mac) {
+  if (!SITE_URL) {
     return {
       statusCode: 503,
-      body: JSON.stringify({ ok: false, error: "WOL_MAC_ADDRESS not configured" }),
+      body: JSON.stringify({ ok: false, error: "URL not configured" }),
     };
   }
 
+  const res = await fetch(`${SITE_URL}/api/legion/wake`, { method: "POST" });
+  const data = await res.json();
   return {
-    statusCode: 200,
-    body: JSON.stringify({
-      ok: true,
-      message: `Wake-on-LAN queued for ${mac}`,
-      note: "UDP magic packet requires a relay on the Legion host.",
-    }),
+    statusCode: res.status,
+    body: JSON.stringify(res.ok ? { ok: true, ...data } : { ok: false, error: data.error }),
   };
 }

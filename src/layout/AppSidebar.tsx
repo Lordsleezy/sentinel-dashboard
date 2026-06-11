@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  ChevronDownIcon,
   DollarLineIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
+  PieChartIcon,
   PlugInIcon,
   ShootingStarIcon,
   TableIcon,
@@ -21,6 +21,7 @@ type NavItem = {
   name: string;
   icon: React.ReactNode;
   path: string;
+  badge?: number;
 };
 
 function DatabaseIcon() {
@@ -34,13 +35,28 @@ function DatabaseIcon() {
   );
 }
 
-const navItems: NavItem[] = [
+function useInvestBadge() {
+  const [badge, setBadge] = useState(0);
+  useEffect(() => {
+    fetch("/api/invest/signals")
+      .then((r) => r.json())
+      .then((d) => {
+        const count = (d.signals || []).filter((s: { confidence: number }) => s.confidence > 80).length;
+        setBadge(count);
+      })
+      .catch(() => {});
+  }, []);
+  return badge;
+}
+
+const navItemsBase: Omit<NavItem, "badge">[] = [
   { icon: <GridIcon />, name: "Overview", path: "/" },
   { icon: <ShootingStarIcon />, name: "Scout", path: "/scout" },
   { icon: <ListIcon />, name: "Lister", path: "/lister" },
   { icon: <TableIcon />, name: "Market", path: "/market" },
   { icon: <DatabaseIcon />, name: "Medusa", path: "/medusa" },
   { icon: <DollarLineIcon />, name: "Stripe", path: "/stripe" },
+  { icon: <PieChartIcon />, name: "Invest", path: "/invest" },
   { icon: <BoxCubeIcon />, name: "Legion", path: "/legion" },
   { icon: <KeyIcon />, name: "Activation Codes", path: "/activation-codes" },
   { icon: <DownloadIcon />, name: "Downloads", path: "/downloads" },
@@ -50,6 +66,10 @@ const navItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const investBadge = useInvestBadge();
+  const navItems: NavItem[] = navItemsBase.map((item) =>
+    item.path === "/invest" && investBadge > 0 ? { ...item, badge: investBadge } : item
+  );
 
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
@@ -118,7 +138,14 @@ const AppSidebar: React.FC = () => {
                       {nav.icon}
                     </span>
                     {(isExpanded || isHovered || isMobileOpen) && (
-                      <span className="menu-item-text">{nav.name}</span>
+                      <span className="menu-item-text flex items-center gap-2">
+                        {nav.name}
+                        {nav.badge ? (
+                          <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                            {nav.badge}
+                          </span>
+                        ) : null}
+                      </span>
                     )}
                   </Link>
                 </li>

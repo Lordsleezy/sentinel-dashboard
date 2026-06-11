@@ -14,5 +14,8 @@ export async function GET() {
     serper: mask(process.env.SERPER_API_KEY),
     github: mask(process.env.GITHUB_TOKEN),
     netlifyHook: process.env.NETLIFY_DEPLOY_HOOK ? "Configured" : "—",
+    wol: mask(process.env.WOL_MAC_ADDRESS),
+    legionSsh: process.env.LEGION_SSH_HOST ? "Configured" : "—",
+    dashboardToken: process.env.DASHBOARD_API_TOKEN ? "Configured" : "—",
   });
 }

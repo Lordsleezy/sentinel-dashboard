@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import MetricCard from "@/components/dashboard/MetricCard";
 import StatusDot from "@/components/dashboard/StatusDot";
 import PageHeader from "@/components/dashboard/PageHeader";
 import LoadingState from "@/components/dashboard/LoadingState";
+import Button from "@/components/ui/button/Button";
+import { authHeaders } from "@/lib/api-token";
 
 type Overview = {
   mrr: number;
@@ -23,19 +25,62 @@ type Overview = {
   }[];
 };
 
+type LegionStatus = { online: boolean; ms: number };
+
 export default function OverviewPage() {
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [legionStatus, setLegionStatus] = useState<LegionStatus | null>(null);
+  const [legionAction, setLegionAction] = useState("");
 
-  useEffect(() => {
+  const loadOverview = useCallback(() => {
     fetch("/api/overview")
       .then((r) => r.json())
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
 
+  const loadLegionStatus = useCallback(() => {
+    fetch("/api/legion/status")
+      .then((r) => r.json())
+      .then(setLegionStatus);
+  }, []);
+
+  useEffect(() => {
+    loadOverview();
+  }, [loadOverview]);
+
+  useEffect(() => {
+    loadLegionStatus();
+    const interval = setInterval(loadLegionStatus, 30000);
+    return () => clearInterval(interval);
+  }, [loadLegionStatus]);
+
+  const wakeLegion = async () => {
+    setLegionAction("Waking...");
+    const res = await fetch("/api/legion/wake", { method: "POST" });
+    const body = await res.json();
+    setLegionAction(body.status || body.error || "Done");
+    setTimeout(loadLegionStatus, 3000);
+  };
+
+  const shutdownLegion = async () => {
+    if (!confirm("Shut down Legion now? Scout and Lister will go offline.")) return;
+    setLegionAction("Shutting down...");
+    const res = await fetch("/api/legion/shutdown", {
+      method: "POST",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+    });
+    const body = await res.json();
+    setLegionAction(body.status || body.error || "Done");
+    setTimeout(loadLegionStatus, 5000);
+  };
+
   if (loading) return <LoadingState />;
   if (!data) return <div className="text-red-500">Failed to load overview</div>;
+
+  const online = legionStatus?.online ?? data.legion.ok;
+  const legionMs = legionStatus?.ms ?? data.legion.ms;
 
   return (
     <div>
@@ -52,8 +97,32 @@ export default function OverviewPage() {
         <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 dark:bg-gray-900">
           <p className="text-sm text-gray-500 dark:text-gray-400">Legion Status</p>
           <div className="mt-3">
-            <StatusDot ok={data.legion.ok} label="legion.sentinelprime.org" ms={data.legion.ms} />
+            <StatusDot
+              ok={online}
+              label={online ? "Online" : "Offline"}
+              ms={legionMs}
+            />
           </div>
+          <p className="mt-1 text-xs text-gray-500">scout.sentinelprime.org</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {!online && (
+              <Button size="sm" onClick={wakeLegion}>
+                Wake
+              </Button>
+            )}
+            {online && (
+              <button
+                type="button"
+                onClick={shutdownLegion}
+                className="rounded-lg bg-red-600/80 px-3 py-1.5 text-xs text-white hover:bg-red-700"
+              >
+                Shutdown
+              </button>
+            )}
+          </div>
+          {legionAction && (
+            <p className="mt-2 text-xs text-teal-500">{legionAction}</p>
+          )}
         </div>
       </div>
 

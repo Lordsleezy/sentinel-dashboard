@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
+  API_TOKEN_KEY,
   AUTH_STORAGE_KEY,
   DEFAULT_PASSWORD,
   PASSWORD_STORAGE_KEY,
@@ -50,6 +51,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const valid = password === getStoredPassword();
     if (valid) {
       localStorage.setItem(AUTH_STORAGE_KEY, "true");
+      fetch("/api/auth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.token) localStorage.setItem(API_TOKEN_KEY, d.token);
+        })
+        .catch(() => {});
       setIsAuthenticated(true);
     }
     return valid;
@@ -57,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(API_TOKEN_KEY);
     setIsAuthenticated(false);
     router.replace("/signin");
   }, [router]);

@@ -5,7 +5,6 @@ import PageHeader from "@/components/dashboard/PageHeader";
 import LoadingState from "@/components/dashboard/LoadingState";
 import Button from "@/components/ui/button/Button";
 import type { ScoutApproval } from "@/lib/supabase";
-import { LISTER_DIRECT_API } from "@/lib/config";
 
 export default function ScoutPage() {
   const [items, setItems] = useState<ScoutApproval[]>([]);
@@ -38,12 +37,10 @@ export default function ScoutPage() {
         approval_id: item.id,
         image: item.image,
       };
-      const target = `${LISTER_DIRECT_API.replace(/\/$/, "")}/list`;
-      console.log("[Scout Create Listing] POST", target, payload);
-      const res = await fetch(target, {
+      const res = await fetch("/api/lister/proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ action: "list", payload }),
       });
       const data = await res.json().catch(() => ({}));
       console.log("[Scout Create Listing] response", res.status, data);
