@@ -1,17 +1,46 @@
 const MEDUSA_URL = (process.env.NEXT_PUBLIC_MEDUSA_URL || "https://legion.sentinelprime.org").replace(/\/$/, "");
+const MEDUSA_PUBLISHABLE_KEY = process.env.MEDUSA_PUBLISHABLE_KEY || "";
+const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || "";
+const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || "";
 const MEDUSA_KEY = process.env.MEDUSA_API_KEY || "";
 
-export function medusaHeaders() {
+let cachedAdminToken: { token: string; expiresAt: number } | null = null;
+
+async function getAdminToken(): Promise<string> {
+  if (cachedAdminToken && Date.now() < cachedAdminToken.expiresAt) {
+    return cachedAdminToken.token;
+  }
+
+  if (MEDUSA_ADMIN_EMAIL && MEDUSA_ADMIN_PASSWORD) {
+    const res = await fetch(`${MEDUSA_URL}/auth/user/emailpass`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: MEDUSA_ADMIN_EMAIL, password: MEDUSA_ADMIN_PASSWORD }),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { token: string };
+      cachedAdminToken = { token: data.token, expiresAt: Date.now() + 50 * 60 * 1000 };
+      return data.token;
+    }
+  }
+
+  if (MEDUSA_KEY) return MEDUSA_KEY;
+  throw new Error("Medusa credentials not configured");
+}
+
+export async function medusaHeaders() {
+  const token = await getAdminToken();
   return {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${MEDUSA_KEY}`,
+    Authorization: `Bearer ${token}`,
   };
 }
 
 export async function medusaAdminFetch(path: string, options: RequestInit = {}) {
+  const headers = await medusaHeaders();
   const res = await fetch(`${MEDUSA_URL}${path}`, {
     ...options,
-    headers: { ...medusaHeaders(), ...(options.headers || {}) },
+    headers: { ...headers, ...(options.headers || {}) },
   });
   const text = await res.text();
   let data: unknown = {};
@@ -50,6 +79,10 @@ export async function updateVariantPrice(variantId: string, amountCents: number)
       prices: [{ amount: amountCents, currency_code: "usd" }],
     }),
   });
+}
+
+export function storeHeaders() {
+  return MEDUSA_PUBLISHABLE_KEY ? { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY } : {};
 }
 
 export type MedusaProduct = {

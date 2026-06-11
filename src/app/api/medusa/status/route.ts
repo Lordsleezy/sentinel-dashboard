@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
+import { storeHeaders } from "@/lib/medusa";
 
-const MEDUSA_URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://136.118.148.167:9000";
+const MEDUSA_URL = (process.env.NEXT_PUBLIC_MEDUSA_URL || "https://legion.sentinelprime.org").replace(/\/$/, "");
 
 export async function GET() {
   try {
     const res = await fetch(`${MEDUSA_URL}/store/products?limit=1`, {
       signal: AbortSignal.timeout(6000),
-      headers: { "x-publishable-api-key": process.env.MEDUSA_API_KEY || "" },
+      headers: storeHeaders(),
     });
 
     if (!res.ok) {

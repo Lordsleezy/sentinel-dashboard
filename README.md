@@ -37,6 +37,17 @@ npm run dev
 3. Set environment variables from `.env.local.example`
 4. Add DNS: `dashboard.sentinelprime.org` CNAME → your Netlify site
 
+### Scout / Lister tunnel DNS (required for HTTPS)
+
+In Cloudflare DNS for `sentinelprime.org`, add proxied CNAMEs:
+
+| Name | Target |
+|------|--------|
+| `scout` | `bc6619f8-db74-488e-9a4f-6f063f71d78e.cfargotunnel.com` |
+| `lister` | `bc6619f8-db74-488e-9a4f-6f063f71d78e.cfargotunnel.com` |
+
+Or run: `CF_API_TOKEN=xxx node scripts/add-scout-lister-dns.mjs`
+
 ## Required API Keys
 
 - `SUPABASE_SERVICE_ROLE_KEY` — Scout/Lister pending counts and tables
