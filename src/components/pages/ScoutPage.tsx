@@ -5,6 +5,7 @@ import PageHeader from "@/components/dashboard/PageHeader";
 import LoadingState from "@/components/dashboard/LoadingState";
 import Button from "@/components/ui/button/Button";
 import type { ScoutApproval } from "@/lib/supabase";
+import { LISTER_DIRECT_API } from "@/lib/config";
 
 export default function ScoutPage() {
   const [items, setItems] = useState<ScoutApproval[]>([]);
@@ -25,6 +26,33 @@ export default function ScoutPage() {
   }, [load]);
 
   const action = async (act: "approve" | "reject", id: string) => {
+    if (act === "approve") {
+      const item = items.find((row) => row.id === id);
+      if (!item) return;
+      const payload = {
+        input: item.url || item.title,
+        title: item.title,
+        url: item.url,
+        price: item.price,
+        source: item.source,
+        approval_id: item.id,
+        image: item.image,
+      };
+      const target = `${LISTER_DIRECT_API.replace(/\/$/, "")}/list`;
+      console.log("[Scout Create Listing] POST", target, payload);
+      const res = await fetch(target, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      console.log("[Scout Create Listing] response", res.status, data);
+      if (!res.ok) {
+        throw new Error(data?.error || data?.detail || `Lister returned ${res.status}`);
+      }
+      load();
+      return;
+    }
     await fetch("/api/scout/proxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -109,7 +137,7 @@ export default function ScoutPage() {
                           onClick={() => action("approve", row.id)}
                           className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs text-white hover:bg-teal-700"
                         >
-                          Approve
+                          Create Listing
                         </button>
                         <button
                           onClick={() => action("reject", row.id)}

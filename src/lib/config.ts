@@ -5,6 +5,8 @@ export const PASSWORD_STORAGE_KEY = "sentinel_dashboard_password";
 
 export const SCOUT_API = "https://scout.sentinelprime.org";
 export const LISTER_API = "https://lister.sentinelprime.org";
+export const LISTER_DIRECT_API =
+  process.env.NEXT_PUBLIC_LISTER_DIRECT_API || "http://192.168.0.117:8002";
 export const LEGION_URL = "https://legion.sentinelprime.org";
 export const MARKET_URL = "https://market.sentinelprime.org";
 
