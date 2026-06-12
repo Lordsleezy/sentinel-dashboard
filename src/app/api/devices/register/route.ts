@@ -1,29 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { commandCorsHeaders, commandOptionsResponse } from "@/lib/cors";
 
 type RegisterDeviceBody = {
   token?: unknown;
   platform?: unknown;
 };
 
+export async function OPTIONS() {
+  return commandOptionsResponse();
+}
+
 export async function POST(request: NextRequest) {
   let body: RegisterDeviceBody;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400, headers: commandCorsHeaders }
+    );
   }
 
   const token = typeof body.token === "string" ? body.token.trim() : "";
   const platform = typeof body.platform === "string" ? body.platform.trim() : "";
 
   if (!token) {
-    return NextResponse.json({ error: "token is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "token is required" },
+      { status: 400, headers: commandCorsHeaders }
+    );
   }
 
   const supabase = getSupabase();
   if (!supabase) {
-    return NextResponse.json({ error: "Supabase is not configured" }, { status: 503 });
+    return NextResponse.json(
+      { error: "Supabase is not configured" },
+      { status: 503, headers: commandCorsHeaders }
+    );
   }
 
   const { error } = await supabase
@@ -38,8 +52,11 @@ export async function POST(request: NextRequest) {
     );
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500, headers: commandCorsHeaders }
+    );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { headers: commandCorsHeaders });
 }

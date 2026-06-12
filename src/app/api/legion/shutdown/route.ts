@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { NodeSSH } from "node-ssh";
 import { verifyDashboardAuth } from "@/lib/dashboard-auth";
+import { commandCorsHeaders, commandOptionsResponse } from "@/lib/cors";
+
+export async function OPTIONS() {
+  return commandOptionsResponse();
+}
 
 export async function POST(request: NextRequest) {
   if (!verifyDashboardAuth(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: commandCorsHeaders }
+    );
   }
 
   const host = process.env.LEGION_SSH_HOST;
@@ -14,7 +22,7 @@ export async function POST(request: NextRequest) {
   if (!host || !username || !password) {
     return NextResponse.json(
       { error: "LEGION_SSH_HOST, LEGION_SSH_USER, LEGION_SSH_PASSWORD required" },
-      { status: 503 }
+      { status: 503, headers: commandCorsHeaders }
     );
   }
 
@@ -22,11 +30,14 @@ export async function POST(request: NextRequest) {
   try {
     await ssh.connect({ host, username, password });
     await ssh.execCommand("sudo shutdown now");
-    return NextResponse.json({ status: "shutdown initiated" });
+    return NextResponse.json(
+      { status: "shutdown initiated" },
+      { headers: commandCorsHeaders }
+    );
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "SSH shutdown failed" },
-      { status: 500 }
+      { status: 500, headers: commandCorsHeaders }
     );
   } finally {
     ssh.dispose();

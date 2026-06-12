@@ -3,6 +3,11 @@ import { getSupabase } from "@/lib/supabase";
 import { getMRR, getRecentPayments } from "@/lib/stripe";
 import { listProducts } from "@/lib/medusa";
 import { LEGION_URL } from "@/lib/config";
+import { commandCorsHeaders, commandOptionsResponse } from "@/lib/cors";
+
+export async function OPTIONS() {
+  return commandOptionsResponse();
+}
 
 export async function GET() {
   const [mrrData, payments, products, scoutPending, listerPending, legionHealth] =
@@ -23,18 +28,21 @@ export async function GET() {
     productCount = products.length;
   }
 
-  return NextResponse.json({
-    mrr: mrrData.mrr,
-    subscribers: mrrData.subscribers,
-    activeProducts: productCount,
-    pendingScout: scoutPending,
-    pendingLister: listerPending,
-    legion: legionHealth,
-    payments,
-    errors: {
-      stripe: "error" in mrrData ? mrrData.error : undefined,
+  return NextResponse.json(
+    {
+      mrr: mrrData.mrr,
+      subscribers: mrrData.subscribers,
+      activeProducts: productCount,
+      pendingScout: scoutPending,
+      pendingLister: listerPending,
+      legion: legionHealth,
+      payments,
+      errors: {
+        stripe: "error" in mrrData ? mrrData.error : undefined,
+      },
     },
-  });
+    { headers: commandCorsHeaders }
+  );
 }
 
 async function countPending(table: string) {

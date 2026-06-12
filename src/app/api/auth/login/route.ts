@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyDashboardPassword } from "@/lib/dashboard-auth";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+import { commandCorsHeaders, commandOptionsResponse } from "@/lib/cors";
 
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
+  return commandOptionsResponse();
 }
 
 export async function POST(request: NextRequest) {
@@ -17,7 +12,7 @@ export async function POST(request: NextRequest) {
   if (!password || !verifyDashboardPassword(password)) {
     return NextResponse.json(
       { error: "Invalid password" },
-      { status: 401, headers: corsHeaders }
+      { status: 401, headers: commandCorsHeaders }
     );
   }
 
@@ -25,9 +20,9 @@ export async function POST(request: NextRequest) {
   if (!token) {
     return NextResponse.json(
       { error: "DASHBOARD_API_TOKEN not configured" },
-      { status: 503, headers: corsHeaders }
+      { status: 503, headers: commandCorsHeaders }
     );
   }
 
-  return NextResponse.json({ token }, { headers: corsHeaders });
+  return NextResponse.json({ token }, { headers: commandCorsHeaders });
 }
