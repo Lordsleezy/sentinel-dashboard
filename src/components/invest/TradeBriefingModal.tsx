@@ -26,12 +26,12 @@ export default function TradeBriefingModal({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        signalId: signal.id,
         ticker: signal.ticker,
-        direction: signal.direction,
-        entryPrice: signal.entryPrice,
-        targetPrice: signal.targetPrice,
-        stopPrice: signal.stopPrice,
+        side: signal.direction === "Short" ? "sell" : "buy",
+        qty: 1,
+        entry_price: signal.entryPrice,
+        take_profit: signal.targetPrice,
+        stop_loss: signal.stopPrice,
       }),
     });
     const data = await res.json();
@@ -58,7 +58,7 @@ export default function TradeBriefingModal({
       <section className="mt-6">
         <h3 className="text-sm font-medium text-teal-400">News Catalyst</h3>
         <ul className="mt-2 space-y-2">
-          {signal.newsHeadlines.map((n, i) => (
+          {(signal.newsHeadlines || []).map((n, i) => (
             <li key={i} className="text-sm text-gray-300">
               <span
                 className={`mr-2 rounded px-1.5 py-0.5 text-xs ${
@@ -78,7 +78,7 @@ export default function TradeBriefingModal({
         <div>
           <h3 className="text-sm font-medium text-teal-400">Bull Case</h3>
           <ul className="mt-2 list-disc pl-5 text-sm text-gray-300">
-            {signal.bullCase.map((b, i) => (
+            {(signal.bullCase || []).map((b, i) => (
               <li key={i}>{b}</li>
             ))}
           </ul>
@@ -86,7 +86,7 @@ export default function TradeBriefingModal({
         <div>
           <h3 className="text-sm font-medium text-teal-400">Bear Case</h3>
           <ul className="mt-2 list-disc pl-5 text-sm text-gray-300">
-            {signal.bearCase.map((b, i) => (
+            {(signal.bearCase || []).map((b, i) => (
               <li key={i}>{b}</li>
             ))}
           </ul>

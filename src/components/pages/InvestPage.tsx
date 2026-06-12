@@ -14,6 +14,12 @@ import type {
   WatchlistItem,
 } from "@/lib/invest-mock";
 
+type LiveSignal = Record<string, unknown>;
+type LiveWatchlistItem = Record<string, unknown>;
+type LivePortfolio = Record<string, unknown>;
+type LiveNewsItem = Record<string, unknown>;
+type LivePulse = Record<string, unknown>;
+
 function confidenceColor(c: number) {
   if (c > 75) return "text-green-400";
   if (c >= 50) return "text-yellow-400";
@@ -22,6 +28,124 @@ function confidenceColor(c: number) {
 
 function badge(cls: string, label: string) {
   return <span className={`rounded px-2 py-0.5 text-xs font-medium ${cls}`}>{label}</span>;
+}
+
+function num(value: unknown, fallback = 0): number {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function text(value: unknown, fallback = ""): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function arr<T = unknown>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+function normalizeSignal(row: LiveSignal, index: number): InvestSignal {
+  const directionRaw = text(row.direction, "long").toLowerCase();
+  const direction: "Long" | "Short" = directionRaw === "short" ? "Short" : "Long";
+  const entryPrice = num(row.entryPrice ?? row.entry_price);
+  const targetPrice = num(row.targetPrice ?? row.target_price);
+  const stopPrice = num(row.stopPrice ?? row.stop_price);
+  const newsHeadlines = arr<LiveNewsItem>(row.newsHeadlines ?? row.news_headlines).map((n) => ({
+    title: text(n.title ?? n.headline, "Market update"),
+    source: text(n.source, "Sentinel"),
+    sentiment: text(n.sentiment, "neutral") === "negative" ? "bearish" as const : "bullish" as const,
+  }));
+
+  return {
+    id: text(row.id, `${text(row.ticker, "SIG")}-${index}`),
+    ticker: text(row.ticker, "N/A"),
+    direction,
+    confidence: num(row.confidence),
+    entryPrice,
+    targetPrice,
+    stopPrice,
+    catalyst: text(row.catalyst, "Technical") as InvestSignal["catalyst"],
+    technicalSetup: text(row.technicalSetup ?? row.technical_summary, "Live technical scan"),
+    rsi: num(row.rsi),
+    macd: text(row.macd ?? row.macd_signal, "n/a"),
+    volumeSummary: row.volumeSummary ? text(row.volumeSummary) : `Volume ratio ${num(row.volume_ratio, 0).toFixed(2)}`,
+    newsHeadlines,
+    bullCase: arr<string>(row.bullCase ?? row.bull_case),
+    bearCase: arr<string>(row.bearCase ?? row.bear_case),
+    dollarRisk: num(row.dollarRisk ?? row.risk_dollars),
+    expectedReward: num(row.expectedReward ?? row.reward_dollars),
+  };
+}
+
+function normalizeWatchlist(row: LiveWatchlistItem): WatchlistItem {
+  const history = arr<LiveWatchlistItem>(row.history);
+  const sparkline = history.map((h) => num(h.price)).filter((v) => v > 0);
+  const price = num(row.price);
+  return {
+    ticker: text(row.ticker, "N/A"),
+    price,
+    change1d: num(row.change1d ?? row.change_1d),
+    aiScore: num(row.aiScore ?? row.ai_score),
+    sparkline: sparkline.length > 1 ? sparkline : [price * 0.99, price],
+  };
+}
+
+function normalizePortfolio(data: LivePortfolio) {
+  const balance = num(data.balance);
+  const positions = arr<LivePortfolio>(data.openPositions ?? data.positions).map((p) => {
+    const entry = num(p.entry ?? p.avg_entry_price);
+    const current = num(p.current ?? p.current_price);
+    const pnl = num(p.pnl ?? p.unrealized_pl);
+    return {
+      ticker: text(p.ticker ?? p.symbol, "N/A"),
+      direction: text(p.direction ?? p.side, "Long") === "Short" ? "Short" as const : "Long" as const,
+      shares: num(p.shares ?? p.qty),
+      entry,
+      current,
+      pnl,
+      pnlPct: num(p.pnlPct ?? p.unrealized_plpc) * (Math.abs(num(p.unrealized_plpc)) < 1 ? 100 : 1),
+    };
+  });
+  const history = arr<LivePortfolio>(data.history ?? data.trade_history).map((t, index) => ({
+    id: text(t.id, `trade-${index}`),
+    ticker: text(t.ticker ?? t.symbol, "N/A"),
+    direction: text(t.direction ?? t.side, "Long") === "Short" ? "Short" as const : "Long" as const,
+    entry: num(t.entry ?? t.limit_price ?? t.filled_avg_price),
+    exit: num(t.exit ?? t.stop_price),
+    pnl: num(t.pnl),
+    closedAt: text(t.closedAt ?? t.created_at, new Date().toISOString()),
+  }));
+  return {
+    paperPnl: num(data.paperPnl ?? data.pnl),
+    paperPnlPct: balance ? (num(data.paperPnl ?? data.pnl) / balance) * 100 : num(data.paperPnlPct),
+    openPositions: positions,
+    history,
+  };
+}
+
+function normalizeNews(data: unknown): NewsItem[] {
+  return arr<LiveNewsItem>((data as { items?: unknown })?.items ?? data).map((n, index) => ({
+    id: text(n.id, `news-${index}`),
+    headline: text(n.headline ?? n.title, "Market headline"),
+    source: text(n.source, "Sentinel"),
+    sentiment: text(n.sentiment, "neutral") as NewsItem["sentiment"],
+    tickers: arr<string>(n.tickers).length ? arr<string>(n.tickers) : [text(n.ticker, "SPY")],
+    publishedAt: text(n.publishedAt ?? n.published_at, new Date().toISOString()),
+  }));
+}
+
+function normalizePulse(data: LivePulse): MarketPulse {
+  const sectorMap = data.sector_performance;
+  const sectors = Array.isArray(data.sectors)
+    ? data.sectors as MarketPulse["sectors"]
+    : sectorMap && typeof sectorMap === "object"
+      ? Object.entries(sectorMap as Record<string, unknown>).map(([sector, change]) => ({ sector, change: num(change) }))
+      : [];
+  return {
+    fearGreed: num(data.fearGreed ?? data.fear_greed_index),
+    fearGreedLabel: text(data.fearGreedLabel ?? data.fear_greed_label, "Neutral"),
+    vix: num(data.vix),
+    sectors,
+  };
 }
 
 export default function InvestPage() {
@@ -48,11 +172,11 @@ export default function InvestPage() {
       fetch("/api/invest/market-pulse").then((r) => r.json()),
     ])
       .then(([sig, watch, port, newsData, pulseData]) => {
-        setSignals(sig.signals || []);
-        setWatchlist(watch.items || []);
-        setPortfolio(port);
-        setNews(newsData.items || []);
-        setPulse(pulseData);
+        setSignals(arr<LiveSignal>(sig.signals ?? sig).map(normalizeSignal));
+        setWatchlist(arr<LiveWatchlistItem>(watch.items ?? watch).map(normalizeWatchlist));
+        setPortfolio(normalizePortfolio(port));
+        setNews(normalizeNews(newsData));
+        setPulse(normalizePulse(pulseData));
       })
       .finally(() => setLoading(false));
   }, []);
