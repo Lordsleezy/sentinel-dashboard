@@ -4,13 +4,30 @@ import React, { useCallback, useEffect, useState } from "react";
 import PageHeader from "@/components/dashboard/PageHeader";
 import LoadingState from "@/components/dashboard/LoadingState";
 import Button from "@/components/ui/button/Button";
+import Alert from "@/components/ui/alert/Alert";
 import type { ScoutApproval } from "@/lib/supabase";
+import { LISTER_API } from "@/lib/config";
+import { formatApiError } from "@/lib/api-error";
+
+type ListResponse = {
+  draft?: { id: string; title?: string };
+  preview?: { title?: string };
+};
+
+type AlertState = {
+  variant: "success" | "error" | "warning" | "info";
+  title: string;
+  message: string;
+} | null;
 
 export default function ScoutPage() {
   const [items, setItems] = useState<ScoutApproval[]>([]);
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [creatingId, setCreatingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [alert, setAlert] = useState<AlertState>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -24,49 +41,114 @@ export default function ScoutPage() {
     load();
   }, [load]);
 
-  const action = async (act: "approve" | "reject", id: string) => {
-    if (act === "approve") {
-      const item = items.find((row) => row.id === id);
-      if (!item) return;
-      const payload = {
-        input: item.url || item.title,
-        title: item.title,
-        url: item.url,
-        price: item.price,
-        source: item.source,
-        approval_id: item.id,
-        image: item.image,
-      };
-      const res = await fetch("/api/lister/proxy", {
+  const createListing = async (item: ScoutApproval) => {
+    setCreatingId(item.id);
+    setAlert(null);
+
+    const payload = {
+      input: item.url || item.title,
+      title: item.title,
+      url: item.url,
+      price: item.price,
+      source: item.source,
+      approval_id: item.id,
+      image: item.image,
+    };
+
+    try {
+      // Direct HTTPS call — Netlify proxy times out (~40s) while listing takes 60–120s.
+      const listRes = await fetch(`${LISTER_API.replace(/\/$/, "")}/list`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "list", payload }),
+        body: JSON.stringify(payload),
+      });
+      const listData = (await listRes.json().catch(() => ({}))) as ListResponse & {
+        error?: string;
+        detail?: unknown;
+      };
+
+      if (!listRes.ok) {
+        throw new Error(formatApiError(listData, `Lister returned ${listRes.status}`));
+      }
+
+      const draftId = listData.draft?.id;
+      let medusaMsg = "Draft created in Lister queue.";
+
+      if (draftId) {
+        const approveRes = await fetch("/api/lister/proxy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "approve", id: draftId }),
+        });
+        const approveData = await approveRes.json().catch(() => ({}));
+        if (approveRes.ok) {
+          medusaMsg = `Published to Medusa (product ${(approveData as { medusa_product_id?: string }).medusa_product_id || "created"}).`;
+        } else {
+          medusaMsg = `Draft created but Medusa publish failed: ${formatApiError(approveData, approveRes.statusText)}`;
+        }
+      }
+
+      setAlert({
+        variant: "success",
+        title: "Listing created",
+        message: `${listData.draft?.title || listData.preview?.title || item.title} — ${medusaMsg}`,
+      });
+      load();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Create listing failed";
+      setAlert({
+        variant: "error",
+        title: "Create listing failed",
+        message,
+      });
+    } finally {
+      setCreatingId(null);
+    }
+  };
+
+  const rejectItem = async (id: string) => {
+    setAlert(null);
+    try {
+      const res = await fetch("/api/scout/proxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reject", id }),
       });
       const data = await res.json().catch(() => ({}));
-      console.log("[Scout Create Listing] response", res.status, data);
       if (!res.ok) {
-        throw new Error(data?.error || data?.detail || `Lister returned ${res.status}`);
+        throw new Error(formatApiError(data, `Reject failed (${res.status})`));
       }
       load();
-      return;
+    } catch (e) {
+      setAlert({
+        variant: "error",
+        title: "Reject failed",
+        message: e instanceof Error ? e.message : "Unknown error",
+      });
     }
-    await fetch("/api/scout/proxy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: act, id }),
-    });
-    load();
   };
 
   const manualScan = async () => {
     setScanning(true);
+    setAlert(null);
     try {
-      await fetch("/api/scout/proxy", {
+      const res = await fetch("/api/scout/proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "scan" }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(formatApiError(data, `Scan failed (${res.status})`));
+      }
+      setAlert({ variant: "success", title: "Scan started", message: "Scout scan triggered." });
       load();
+    } catch (e) {
+      setAlert({
+        variant: "error",
+        title: "Scan failed",
+        message: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setScanning(false);
     }
@@ -87,6 +169,13 @@ export default function ScoutPage() {
           </Button>
         }
       />
+
+      {alert && (
+        <div className="mb-4">
+          <Alert variant={alert.variant} title={alert.title} message={alert.message} />
+        </div>
+      )}
+
       <input
         type="text"
         placeholder="Filter by product name..."
@@ -118,34 +207,52 @@ export default function ScoutPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((row) => (
-                  <tr key={row.id} className="border-t border-gray-100 dark:border-gray-800">
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{row.title}</td>
-                    <td className="px-4 py-3">${row.price ?? "—"}</td>
-                    <td className="px-4 py-3">${row.market_value ?? "—"}</td>
-                    <td className="px-4 py-3">{row.source ?? "—"}</td>
-                    <td className="px-4 py-3">{row.score ?? "—"}</td>
-                    <td className="max-w-xs truncate px-4 py-3 text-gray-500" title={row.reasoning ?? ""}>
-                      {row.reasoning ?? "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                filtered.map((row) => {
+                  const isExpanded = expandedId === row.id;
+                  const reasoning = row.reasoning ?? "—";
+                  return (
+                    <tr key={row.id} className="border-t border-gray-100 dark:border-gray-800">
+                      <td
+                        className="max-w-[200px] px-4 py-3 font-medium break-words text-gray-900 dark:text-white"
+                        title={row.title}
+                      >
+                        {row.title}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">${row.price ?? "—"}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">${row.market_value ?? "—"}</td>
+                      <td className="px-4 py-3">{row.source ?? "—"}</td>
+                      <td className="px-4 py-3">{row.score ?? "—"}</td>
+                      <td className="max-w-md px-4 py-3 text-gray-500">
                         <button
-                          onClick={() => action("approve", row.id)}
-                          className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs text-white hover:bg-teal-700"
+                          type="button"
+                          onClick={() => setExpandedId(isExpanded ? null : row.id)}
+                          className={`w-full text-left break-words ${isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"}`}
+                          title={reasoning !== "—" ? "Click to expand" : undefined}
                         >
-                          Create Listing
+                          {reasoning}
                         </button>
-                        <button
-                          onClick={() => action("reject", row.id)}
-                          className="rounded-lg bg-red-600/80 px-3 py-1.5 text-xs text-white hover:bg-red-700"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => createListing(row)}
+                            disabled={creatingId === row.id}
+                            className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs text-white hover:bg-teal-700 disabled:opacity-50"
+                          >
+                            {creatingId === row.id ? "Creating…" : "Create Listing"}
+                          </button>
+                          <button
+                            onClick={() => rejectItem(row.id)}
+                            disabled={creatingId === row.id}
+                            className="rounded-lg bg-red-600/80 px-3 py-1.5 text-xs text-white hover:bg-red-700 disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -12,3 +12,9 @@
 
 [functions."scout-nightly-scan"]
   schedule = "0 7 * * *"
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."___netlify-server-handler"]
+  timeout = 60

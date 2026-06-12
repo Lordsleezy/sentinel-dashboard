@@ -7,7 +7,6 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function SettingsPage() {
   const { updatePassword } = useAuth();
-  const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [pwMsg, setPwMsg] = useState("");
@@ -31,7 +30,6 @@ export default function SettingsPage() {
     }
     updatePassword(newPw);
     setPwMsg("Password updated");
-    setCurrentPw("");
     setNewPw("");
     setConfirmPw("");
   };
